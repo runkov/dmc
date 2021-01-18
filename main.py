@@ -26,6 +26,9 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    running = False
         screen.fill((0, 0, 0))
         pygame.draw.circle(screen, (255, 0, 0), (int(x_pos), int(y_pos)), 20)
         clock.tick(fps)
