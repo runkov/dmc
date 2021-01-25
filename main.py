@@ -5,6 +5,10 @@ from dmc import Player
 
 class DMC:
     def __init__(self):
+        #  инициализация pygame нужна некоторым методам работающими с изображениями,
+        #  поэтому делаем в самом начале до создания всех спрайтов
+        pygame.init()
+        pygame.display.set_caption('DMC')
         self.running = True
         self.fps = 60
         self.clock = pygame.time.Clock()
@@ -13,22 +17,7 @@ class DMC:
         self.surface = pygame.display.set_mode(self.size)
 
     def run(self):
-        pygame.init()
-        pygame.display.set_caption('Движущийся круг 2')
         while self.running:
-            dx = 0
-            dy = 0
-            # регистрируем зажатые кнопки
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_a]:
-                dx = -250 / self.fps
-            if keys[pygame.K_d]:
-                dx = 250 / self.fps
-            if keys[pygame.K_w]:
-                dy = -250 / self.fps
-            if keys[pygame.K_s]:
-                dy = 250 / self.fps
-            self.player.speed = (dx, dy)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
@@ -36,8 +25,15 @@ class DMC:
                     if event.key == pygame.K_ESCAPE:
                         self.running = False
             self.surface.fill((0, 0, 0))
+
+            #  регистрируем зажатые кнопки
+            keys = pygame.key.get_pressed()
+
+            #  управляем игроком
+            self.player.handle_events(keys, self.fps)
             self.player.update()
             self.player.draw(self.surface)
+
             self.clock.tick(self.fps)
             pygame.display.flip()
 
