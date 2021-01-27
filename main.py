@@ -9,7 +9,7 @@ class DMC:
         #  поэтому делаем в самом начале до создания всех спрайтов
         pygame.init()
         pygame.display.set_caption('DMC')
-        self.running = True
+        self._running = True
         self.fps = 60
         self.clock = pygame.time.Clock()
         self.player = Player(100, 100)
@@ -17,13 +17,13 @@ class DMC:
         self.surface = pygame.display.set_mode(self.size)
 
     def run(self):
-        while self.running:
+        while self._running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.running = False
+                    self._running = False
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        self.running = False
+                        self._running = False
             self.surface.fill((0, 0, 0))
 
             #  регистрируем зажатые кнопки

@@ -20,25 +20,46 @@ def load_image(name, color_key=None):
     return image
 
 
-#  список нарезаных спрайтов
-def load_frames(name, columns, rows):
-    im = load_image(name)
+#  вернет список нарезаных спрайтов
+def load_frames(name, columns, rows, reverse=False):
+    sheet = load_image(name)
     result = []
     for j in range(rows):
         for i in range(columns):
             frame_location = (108 * i, 149 * j)
-            result.append(im.surface(Rect(frame_location, (108, 149))))
+            if reverse:
+                result.append(pygame.transform.flip(sheet.subsurface(Rect(frame_location, (108, 149))), True, False))
+            else:
+                result.append(sheet.subsurface(Rect(frame_location, (108, 149))))
     return result
 
 
 class Player:
     def __init__(self, x, y, speed=(0, 0)):
-        self.x = x
-        self.y = y
         self.bounds = Rect(x, y, 50, 50)
         self.speed = speed  # (dx, dy)
+        self._last_speed = speed
         self.image = load_image('hero01.jpeg', -1)
-        self.frames = load_frames('sprite-sheet-walking-girl.png', 6, 5)
+        self._frames_right = load_frames('sprite-sheet-walking-girl.png', 6, 5)
+        self._frames_left = load_frames('sprite-sheet-walking-girl.png', 6, 5, reverse=True)
+        self.animation_speed = 8
+        self.animation_tick = 0
+        self.animation_current_frame = 0
+
+    @property
+    def x(self):
+        return self.bounds.x
+
+    @property
+    def y(self):
+        return self.bounds.y
+
+    @property
+    def is_run(self):
+        if self.speed == (0, 0):
+            return False
+        else:
+            return True
 
     def handle_events(self, keys, fps):
         dx = 0
@@ -55,10 +76,21 @@ class Player:
 
     def move(self, dx, dy):
         self.bounds = self.bounds.move(int(dx), int(dy))
+        self._last_speed = (dx, dy)
 
     def update(self):
         if self.speed != (0, 0):
             self.move(*self.speed)
+        if self.animation_tick == 0:
+            self.animation_current_frame = (self.animation_current_frame + 1) % 5
+            if self.is_run:
+                if self.speed[0] < 0:
+                    self.image = self._frames_left[self.animation_current_frame]
+                elif self.speed[0] > 0:
+                    self.image = self._frames_right[self.animation_current_frame]
+            else:
+                self.image = self._frames_right[12]
+        self.animation_tick = (self.animation_tick + 1) % (60 // self.animation_speed)
 
     def draw(self, surface):
         surface.blit(self.image, (self.bounds.x, self.bounds.y))
