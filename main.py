@@ -1,6 +1,6 @@
 import pygame
 
-from dmc import Player
+from dmc import Player, Map
 
 
 class DMC:
@@ -13,8 +13,10 @@ class DMC:
         self.fps = 60
         self.clock = pygame.time.Clock()
         self.player = Player(100, 100)
+        self.map = Map(1000, 600)
         self.size = self.width, self.height = 800, 400
-        self.surface = pygame.display.set_mode(self.size)
+        self.screen = pygame.display.set_mode(self.size)  # главная поверхность
+        self.screen.blit(self.map.background, (0, 0))
 
     def run(self):
         while self._running:
@@ -24,18 +26,19 @@ class DMC:
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         self._running = False
-            self.surface.fill((0, 0, 0))
+            self.screen.fill((0, 0, 0))
+            self.screen.blit(self.map.background, (0, 0))
 
             #  регистрируем зажатые кнопки
             keys = pygame.key.get_pressed()
 
             #  управляем игроком
-            self.player.handle_events(keys, self.fps)
+            self.player.handle_events(keys)
             self.player.update()
-            self.player.draw(self.surface)
+            self.player.draw(self.screen)
 
             self.clock.tick(self.fps)
-            pygame.display.flip()
+            pygame.display.update()  # flip()
 
 
 if __name__ == '__main__':
