@@ -60,6 +60,36 @@ class Map:
         return self._background
 
 
+class GameEntity:
+    def __init__(self, x, y, speed=(0, 0), fps=DEFAULT_FPS):
+        self.fps = fps
+        self.speed = speed
+        self.bounds = Rect(x, y, 50, 50)
+        self.direction = TO_THE_RIGHT
+        self.image = load_image('monster01.png', -1)
+
+    def draw(self, surface, camera):
+        surface.blit(self.image, (self.bounds.x - camera.x, self.bounds.y))
+
+    def update(self, target):
+        dx = 0
+        dy = 0
+        line_speed = PLAYER_SPEED // 4 // self.fps
+        if self.bounds.x - target.x > 0:
+            dx = -line_speed
+        else:
+            dx = line_speed
+        if self.bounds.y - target.y > 0:
+            dy = -line_speed
+        else:
+            dy = line_speed
+        self.speed = (dx, dy)
+        self.move(*self.speed)
+
+    def move(self, dx, dy):
+        self.bounds = self.bounds.move(int(dx), int(dy))
+
+
 class Player:
     def __init__(self, x, y, speed=(0, 0), fps=DEFAULT_FPS):
         self.fps = fps
@@ -129,5 +159,27 @@ class Player:
                 self.image = self.frames[self.direction][12]
         self.animation_tick = (self.animation_tick + 1) % (60 // self.animation_speed)
 
-    def draw(self, surface):
-        surface.blit(self.image, (self.bounds.x, self.bounds.y))
+    def draw(self, surface, dxm, dym):
+        surface.blit(self.image, (self.bounds.x - dxm, self.bounds.y + dym))
+
+
+class Camera:
+    # зададим начальный сдвиг камеры
+    def __init__(self):
+        self.x = 0
+        self.y = 0
+
+    # сдвинуть объект obj на смещение камеры
+    # def apply(self, obj):
+    #     obj.rect.x += self.dx
+    #     obj.rect.y += self.dy
+
+    def update(self, target):
+        if target.x < self.x + 100:
+            self.x += target.x - (self.x + 100)
+        elif target.x > self.x + 500:
+            self.x += target.x - (self.x + 500)
+        if target.y < self.y + 100:
+            self.y += target.y - (self.y + 100)
+        elif target.y > self.y + 400:
+            self.y += self.y - (self.y + 400)
