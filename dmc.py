@@ -69,7 +69,7 @@ class GameEntity:
         self.image = load_image('monster01.png', -1)
 
     def draw(self, surface, camera):
-        surface.blit(self.image, (self.bounds.x - camera.x, self.bounds.y))
+        surface.blit(self.image, (self.bounds.x - camera.x, self.bounds.y - camera.y))
 
     def update(self, target):
         dx = 0
@@ -159,8 +159,8 @@ class Player:
                 self.image = self.frames[self.direction][12]
         self.animation_tick = (self.animation_tick + 1) % (60 // self.animation_speed)
 
-    def draw(self, surface, dxm, dym):
-        surface.blit(self.image, (self.bounds.x - dxm, self.bounds.y + dym))
+    def draw(self, surface, camera):
+        surface.blit(self.image, (self.bounds.x - camera.x, self.bounds.y - camera.y))
 
 
 class Camera:
@@ -181,5 +181,5 @@ class Camera:
             self.x += target.x - (self.x + 500)
         if target.y < self.y + 100:
             self.y += target.y - (self.y + 100)
-        elif target.y > self.y + 400:
-            self.y += self.y - (self.y + 400)
+        elif target.y > self.y + 200:
+            self.y += target.y - (self.y + 200)
