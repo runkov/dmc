@@ -46,7 +46,7 @@ class Map:
             EMPTY_MAP_TILE: color_tile((0, 0, 0)),
             GRASS_MAP_TILE: load_image('grass00.png')
         }
-        
+
         self._background = pygame.Surface((width, height))
         for x in range(width // MAP_TILE_WIDTH):
             for y in range(height // MAP_TILE_HEIGHT):
@@ -65,21 +65,30 @@ class GameEntity:
         self.fps = fps
         self.speed = speed
         self.bounds = Rect(x, y, 50, 50)
+        self.bounds.center = (x, y)
         self.direction = TO_THE_RIGHT
         self.image = load_image('monster01.png', -1)
+        self.image_dx = (self.bounds.w - self.image.get_width()) // 2
+        self.image_dy = (self.bounds.h // 2 - self.image.get_height())
 
     def draw(self, surface, camera):
-        surface.blit(self.image, (self.bounds.x - camera.x, self.bounds.y - camera.y))
+        surface.blit(self.image,
+                     (self.bounds.x + self.image_dx - camera.x,
+                      self.bounds.y + self.image_dy - camera.y))
+
+    def get_rect_image(self):
+        return self.image.get_rect().move((self.bounds.x + self.image_dx,
+                                           self.bounds.y + self.image_dy))
 
     def update(self, target):
-        dx = 0
-        dy = 0
+        # dx = 0
+        # dy = 0
         line_speed = PLAYER_SPEED // 4 // self.fps
-        if self.bounds.x - target.x > 0:
+        if self.bounds.centerx - target.x > 0:
             dx = -line_speed
         else:
             dx = line_speed
-        if self.bounds.y - target.y > 0:
+        if self.bounds.centery - target.y > 0:
             dy = -line_speed
         else:
             dy = line_speed
@@ -88,18 +97,18 @@ class GameEntity:
 
     def move(self, dx, dy):
         self.bounds = self.bounds.move(int(dx), int(dy))
+        # self.image.rect = self.image.get_rect().move(int(dx), int(dy))
 
 
 class Player:
     def __init__(self, x, y, speed=(0, 0), fps=DEFAULT_FPS):
         self.fps = fps
         self.bounds = Rect(x, y, 50, 50)
+        self.bounds.center = (x, y)
         self.speed = speed  # (dx, dy)
         self._last_speed = speed
         self.direction = TO_THE_RIGHT
         self.image = load_image('hero01.jpeg', -1)
-        # self._frames_right = load_frames('sprite-sheet-walking-girl.png', 6, 5)
-        # self._frames_left = load_frames('sprite-sheet-walking-girl.png', 6, 5, reverse=True)
         self.frames = {
             TO_THE_RIGHT: load_frames('sprite-sheet-walking-girl.png', 6, 5),
             TO_THE_LEFT: load_frames('sprite-sheet-walking-girl.png', 6, 5, reverse=True)
@@ -107,14 +116,16 @@ class Player:
         self.animation_speed = 8
         self.animation_tick = 0
         self.animation_current_frame = 0
+        self.image_dx = (self.bounds.w - self.frames[TO_THE_LEFT][0].get_width()) // 2
+        self.image_dy = (self.bounds.h // 2 - self.frames[TO_THE_LEFT][0].get_height())
 
     @property
     def x(self):
-        return self.bounds.x
+        return self.bounds.centerx
 
     @property
     def y(self):
-        return self.bounds.y
+        return self.bounds.centery
 
     @property
     def is_run(self):
@@ -160,26 +171,26 @@ class Player:
         self.animation_tick = (self.animation_tick + 1) % (60 // self.animation_speed)
 
     def draw(self, surface, camera):
-        surface.blit(self.image, (self.bounds.x - camera.x, self.bounds.y - camera.y))
+        surface.blit(self.image, (self.bounds.x + self.image_dx - camera.x,
+                                  self.bounds.y + self.image_dy - camera.y))
 
 
 class Camera:
     # зададим начальный сдвиг камеры
-    def __init__(self):
+    def __init__(self, surface):
         self.x = 0
         self.y = 0
+        #  todo добавить прямоугольник в центр камеры, по пересечению с которым определять необходимость сдвига камеры
 
-    # сдвинуть объект obj на смещение камеры
-    # def apply(self, obj):
-    #     obj.rect.x += self.dx
-    #     obj.rect.y += self.dy
+    def convert_bounds_to_camera(self, bounds):
+        return Rect(bounds.x - self.x, bounds.y - self.y, bounds.width, bounds.height)
 
     def update(self, target):
         if target.x < self.x + 100:
             self.x += target.x - (self.x + 100)
         elif target.x > self.x + 500:
             self.x += target.x - (self.x + 500)
-        if target.y < self.y + 100:
-            self.y += target.y - (self.y + 100)
-        elif target.y > self.y + 200:
+        if target.y < self.y + 200:
             self.y += target.y - (self.y + 200)
+        elif target.y > self.y + 300:
+            self.y += target.y - (self.y + 300)
